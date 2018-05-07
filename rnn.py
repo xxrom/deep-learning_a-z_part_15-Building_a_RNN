@@ -30,6 +30,7 @@ X_train, y_train = np.array(X_train), np.array(y_train)
 # переводим все в правильный формат все данные
 
 # Reshaping
+# нужно для добавления новых сигналов в модель, погода, цена евро/доллара, ...
 X_train = np.reshape(
   X_train,
   ( # keras documentation => Recurrent Layers => input shapes => 3D tensor (array) with shape
@@ -51,8 +52,15 @@ from keras.layers import Dropout
 # Initialising the RNN
 regressor = Sequential() # regression continuous value много значений предсказываем подряд
 
-
-
+# Adding the first LSTM layer and some Dropout regularisation
+regressor.add(LSTM(
+  units = 50, # количество элементов(нейронов)
+  return_sequences = True, # так как дальше еще слои LSTM, то True
+  input_shape = (X_train.shape[1], 1) # структура входного слоя [60, 1]
+))
+regressor.add(Dropout(
+  0.2 # процент засыпания нейронов, убираем переобучение
+))
 
 
 
