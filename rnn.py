@@ -1,5 +1,6 @@
 # Recurrent Neural Network
 
+
 # Part 1 - Data Preprocessing
 import numpy as np
 import matplotlib.pyplot as plt
@@ -7,7 +8,7 @@ import pandas as pd
 
 
 # Importing the training set
-dataset_train = pd.read_csv('Google_Stock_Price_Train.csv')
+dataset_train = pd.read_csv('Google_Stock_Price_Train.csv') # finance.yahoo.com
 training_set = dataset_train.iloc[:, 1:2].values
 # указываем 1:2 а не просто 1, т.к. нужен массив значений а не просто числа
 
@@ -87,6 +88,12 @@ regressor.compile(
   loss = 'mean_squared_error' # MSE как ошибку ищем? каким методом?
 )
 
+# Fitting the RNN to the Training set
+regressor.fit(
+  X_train, y_train,
+  epochs = 100,
+
+)
 
 
 
