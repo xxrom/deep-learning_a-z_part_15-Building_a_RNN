@@ -42,5 +42,26 @@ X_train = np.reshape(
 
 # Part 2 - Building the RNN
 
+# Importing the Keras libraries and packages
+from keras.models import Sequential
+from keras.layers import Dense
+from keras.layers import LSTM
+from keras.layers import Dropout
+
+# Initialising the RNN
+regressor = Sequential() # regression continuous value много значений предсказываем подряд
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
