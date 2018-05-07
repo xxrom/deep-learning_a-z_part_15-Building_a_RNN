@@ -62,11 +62,19 @@ regressor.add(Dropout(
   0.2 # процент засыпания нейронов, убираем переобучение
 ))
 
+# Adding the second LSTM layer and some Dropout regularisation
+regressor.add(LSTM( units = 50, return_sequences = True
+  # input_shape = (X_train.shape[1], 1)) не нужно добавлять, keras сам поймет
+))
+regressor.add(Dropout(0.2))
 
+# Adding the third LSTM layer and some Dropout regularisation
+regressor.add(LSTM( units = 50, return_sequences = True))
+regressor.add(Dropout(0.2))
 
-
-
-
+# Adding the fourth LSTM layer and some Dropout regularisation
+regressor.add(LSTM( units = 50)) # default return_sequences = False т.к. конец
+regressor.add(Dropout(0.2))
 
 
 
