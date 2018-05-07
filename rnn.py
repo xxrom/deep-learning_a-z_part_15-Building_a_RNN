@@ -76,7 +76,16 @@ regressor.add(Dropout(0.2))
 regressor.add(LSTM( units = 50)) # default return_sequences = False т.к. конец
 regressor.add(Dropout(0.2))
 
+# Adding the output layer
+regressor.add(Dense(
+  units = 1 # количество нейронов
+))
 
+# Compiling the RNN
+regressor.compile(
+  optimizer = 'adam', # RMSprop or Adam обычно хорошо для RNN
+  loss = 'mean_squared_error' # MSE как ошибку ищем? каким методом?
+)
 
 
 
