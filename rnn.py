@@ -1,6 +1,5 @@
 # Recurrent Neural Network
 
-
 # Part 1 - Data Preprocessing
 import numpy as np
 import matplotlib.pyplot as plt
@@ -99,7 +98,7 @@ regressor.fit(
 # Part 3 - Making the predicting and visualising the results
 # Getting the real stock price of 2017
 dataset_test = pd.read_csv('Google_Stock_Price_Test.csv') # finance.yahoo.com
-real_set = dataset_test.iloc[:, 1:2].values
+real_stock_price = dataset_test.iloc[:, 1:2].values
 
 # Getting the predictied stock price of 2017 #p15l79
 dataset_total = pd.concat(
@@ -129,7 +128,15 @@ X_test = np.reshape(
 predicted_stock_price = regressor.predict(X_test)
 predicted_stock_price = sc.inverse_transform(predicted_stock_price)
 
+
 # Visualising the results
+plt.plot(real_stock_price, color = 'red', label = 'Real Google Price 20 days')
+plt.plot(predicted_stock_price, color = 'blue', label = 'Predicted Google Price 20 days')
+plt.title('Real and Predicted Google Price')
+plt.xlabel('Time 2017.1.1 - 2017.1.31')
+plt.ylabel('Google Price')
+plt.legend()
+plt.show()
 
 
 
