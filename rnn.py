@@ -81,10 +81,15 @@ regressor.add(Dense(
   units = 1 # количество нейронов
 ))
 
+from keras import backend as K
+def root_mean_squared_error(y_true, y_pred):
+  return K.sqrt(K.mean(K.square(y_pred - y_true), axis=-1))
+
 # Compiling the RNN
 regressor.compile(
   optimizer = 'adam', # RMSprop or Adam обычно хорошо для RNN
-  loss = 'mean_squared_error' # MSE как ошибку ищем? каким методом?
+  loss = root_mean_squared_error # более правильный вариант
+  # loss = 'mean_squared_error' # MSE как ошибку ищем? каким методом?
 )
 
 # Fitting the RNN to the Training set
@@ -137,6 +142,8 @@ plt.xlabel('Time 2017.1.1 - 2017.1.31')
 plt.ylabel('Google Price')
 plt.legend()
 plt.show()
+
+
 
 
 
