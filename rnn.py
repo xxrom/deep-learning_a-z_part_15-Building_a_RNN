@@ -35,8 +35,8 @@ X_train, y_train = np.array(X_train), np.array(y_train)
 X_train = np.reshape(
   X_train,
   ( # keras documentation => Recurrent Layers => input shapes => 3D tensor (array) with shape
-    X_train.shape[0], # 1198, # количество строчек
-    X_train.shape[1], # 60 # количество столбцов
+    X_train.shape[0], # 1198, # количество строчек # полчаем афтоматически!!!
+    X_train.shape[1], # 60 # количество столбцов # полчаем афтоматически!!!
     1 # количество индикаторов, 3 измерение в данных, допустим еще акции apple
   )
 )
@@ -92,8 +92,49 @@ regressor.compile(
 regressor.fit(
   X_train, y_train,
   epochs = 100,
-
+  batch_size = 32
 )
+
+
+# Part 3 - Making the predicting and visualising the results
+# Getting the real stock price of 2017
+dataset_test = pd.read_csv('Google_Stock_Price_Test.csv') # finance.yahoo.com
+real_set = dataset_test.iloc[:, 1:2].values
+
+# Getting the predictied stock price of 2017 #p15l79
+dataset_total = pd.concat(
+  (dataset_train['Open'], dataset_test['Open']), # берем только Open столбец
+  axis = 0 # vertiacal = 0 (по стокам соединяем), horizontal = 1(по столбцам)
+)
+inputs = dataset_total[
+  len(dataset_total) - len(dataset_test) - 60:
+].values # подготавливаем данные для нейронки?
+inputs = inputs.reshape(-1, 1) # [1, 2, 3] => [[1], [2], [3]] ??? =)
+inputs = sc.transform(inputs) # используем предудущую sc функцию/ только scale => transform!
+# подготавливаем данные
+X_test = []
+for i in range(60, 60 + 20): # с 60 до 60 + 20 (количество предсказаний 1 месяц)
+  X_test.append(inputs[i - 60 : i, 0]) # заполняем по 60 элементов
+X_test = np.array(X_test)
+# переделываем в 3D данные
+X_test = np.reshape(
+  X_test,
+  ( # keras documentation => Recurrent Layers => input shapes => 3D tensor (array) with shape
+    X_test.shape[0], # 1198, # количество строчек # полчаем афтоматически!!!
+    X_test.shape[1], # 60 # количество столбцов # полчаем афтоматически!!!
+    1 # количество индикаторов, 3 измерение в данных, допустим еще акции apple
+  )
+)
+
+predicted_stock_price = regressor.predict(X_test)
+predicted_stock_price = sc.inverse_transform(predicted_stock_price)
+
+# Visualising the results
+
+
+
+
+
 
 
 
