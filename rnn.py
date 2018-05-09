@@ -175,10 +175,114 @@ predicted_stock_price2 = sc.inverse_transform(input2[-20:])
 
 
 
+# предсказание на 7 дней вперед ----------------------------------------------
+days_ahead = 3
+# Данные подготавливаем 60 input and 7 outputs
+# Creating a data structure with 60 timesteps and 7 output
+X_train7 = []
+y_train7 = []
+# подготавливаем данные для нейронки
+for i in range(60, 1258 - days_ahead): # с 60 до 1257
+  X_train7.append(training_set_scaled[i - 60 : i, 0]) # заполняем по 60 элементов
+  y_train7.append(training_set_scaled[i: i + days_ahead, 0])
+
+X_train7, y_train7 = np.array(X_train7), np.array(y_train7)
+# переводим все в правильный формат все данные
+
+# Reshaping
+# нужно для добавления новых сигналов в модель, погода, цена евро/доллара, ...
+X_train7 = np.reshape(
+  X_train7,
+  ( # keras documentation => Recurrent Layers => input shapes => 3D tensor (array) with shape
+    X_train7.shape[0], # 1198, # количество строчек # полчаем афтоматически!!!
+    X_train7.shape[1], # 60 # количество столбцов # полчаем афтоматически!!!
+    1 # количество индикаторов, 3 измерение в данных, допустим еще акции apple
+  )
+)
+
+
+# Initialising the RNN
+regressor7 = Sequential() # regression continuous value много значений предсказываем подряд
+
+# Adding the first LSTM layer and some Dropout regularisation
+regressor7.add(LSTM(
+  units = 100, # количество элементов(нейронов)
+  return_sequences = True, # так как дальше еще слои LSTM, то True
+  input_shape = (X_train7.shape[1], 1) # структура входного слоя [60, 1]
+))
+regressor7.add(Dropout(
+  0.2 # процент засыпания нейронов, убираем переобучение
+))
+
+# Adding the second LSTM layer and some Dropout regularisation
+regressor7.add(LSTM( units = 100, return_sequences = True
+  # input_shape = (X_train.shape[1], 1)) не нужно добавлять, keras сам поймет
+))
+regressor7.add(Dropout(0.2))
+
+# Adding the third LSTM layer and some Dropout regularisation
+regressor7.add(LSTM( units = 100, return_sequences = True))
+regressor7.add(Dropout(0.2))
+
+# Adding the fourth LSTM layer and some Dropout regularisation
+regressor7.add(LSTM( units = 100, return_sequences = True)) # default return_sequences = False т.к. конец
+regressor7.add(Dropout(0.2))
+
+# Adding the fifth LSTM layer and some Dropout regularisation
+regressor7.add(LSTM( units = 100)) # default return_sequences = False т.к. конец
+regressor7.add(Dropout(0.2))
+
+# Adding the output layer
+regressor7.add(Dense(
+  units = days_ahead # количество нейронов
+))
+
+from keras import backend as K
+def root_mean_squared_error(y_true, y_pred):
+  return K.sqrt(K.mean(K.square(y_pred - y_true), axis=-1))
+
+# Compiling the RNN
+regressor7.compile(
+  optimizer = 'adam', # RMSprop or Adam обычно хорошо для RNN
+  loss = root_mean_squared_error # более правильный вариант
+  # loss = 'mean_squared_error' # MSE как ошибку ищем? каким методом?
+)
+
+# Fitting the RNN to the Training set
+regressor7.fit(
+  X_train7, y_train7,
+  epochs = 100,
+  batch_size = 32
+)
+
+# regressor7 prediction ------
+input7 = dataset_total[len(dataset_total) - len(dataset_test) - 60: len(dataset_total) - len(dataset_test)].values
+input7 = input7.reshape(-1, 1) # [1, 2, 3] => [[1], [2], [3]] ??? =)
+input7 = sc.transform(input7) # scale
+X_test7 = []
+X_test7.append(input7[0:60, 0])
+X_test7 = np.array(X_test7)
+# переделываем в 3D данные
+X_test7 = np.reshape(
+  X_test7,
+  ( # keras documentation => Recurrent Layers => input shapes => 3D tensor (array) with shape
+    X_test7.shape[0], # 1198, # количество строчек # полчаем афтоматически!!!
+    X_test7.shape[1], # 60 # количество столбцов # полчаем афтоматически!!!
+    1 # количество индикаторов, 3 измерение в данных, допустим еще акции apple
+  )
+)
+
+predicted_stock_price7 = regressor7.predict(X_test7)
+predicted_stock_price7 = sc.inverse_transform(predicted_stock_price7)
+
+
+# ----------------------------------------------------------------------------
+
 # Visualising the results
 plt.plot(real_stock_price, color = 'red', label = 'Real Google Price 20 days')
 plt.plot(predicted_stock_price, color = 'blue', label = 'Predicted Google Price 20 days')
 plt.plot(predicted_stock_price2, color = 'green', label = 'Predicted by me 20 days')
+plt.plot(predicted_stock_price7.T, color = 'black', label = 'Predicted by me 7 days')
 plt.title('Real and Predicted Google Price')
 plt.xlabel('Time 2017.1.1 - 2017.1.31')
 plt.ylabel('Google Price')
