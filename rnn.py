@@ -1,5 +1,7 @@
 # Recurrent Neural Network
 
+# предсказания на больше чем 1 день https://www.udemy.com/deeplearning/learn/v4/questions/3554002
+
 # Part 1 - Data Preprocessing
 import numpy as np
 import matplotlib.pyplot as plt
@@ -113,12 +115,13 @@ dataset_total = pd.concat(
 inputs = dataset_total[
   len(dataset_total) - len(dataset_test) - 60:
 ].values # подготавливаем данные для нейронки?
+
 inputs = inputs.reshape(-1, 1) # [1, 2, 3] => [[1], [2], [3]] ??? =)
 inputs = sc.transform(inputs) # используем предудущую sc функцию/ только scale => transform!
 # подготавливаем данные
 X_test = []
 for i in range(60, 60 + 20): # с 60 до 60 + 20 (количество предсказаний 1 месяц)
-  X_test.append(inputs[i - 60 : i, 0]) # заполняем по 60 элементов
+  X_test.append(inputs[i - 60 : i, 0]) # заполняем по 60 элементов !!!! 0 !!!!!!
 X_test = np.array(X_test)
 # переделываем в 3D данные
 X_test = np.reshape(
@@ -133,10 +136,49 @@ X_test = np.reshape(
 predicted_stock_price = regressor.predict(X_test)
 predicted_stock_price = sc.inverse_transform(predicted_stock_price)
 
+# Predicting stock one by one ================================================
+input2 = dataset_total[len(dataset_total) - len(dataset_test) - 60: len(dataset_total) - len(dataset_test)].values
+input2 = input2.reshape(-1, 1) # [1, 2, 3] => [[1], [2], [3]] ??? =)
+input2 = sc.transform(input2) # scale
+X_test2 = []
+X_test2.append(input2[0:60, 0])
+X_test2 = np.array(X_test2)
+# переделываем в 3D данные
+X_test2 = np.reshape(
+  X_test2,
+  ( # keras documentation => Recurrent Layers => input shapes => 3D tensor (array) with shape
+    X_test2.shape[0], # 1198, # количество строчек # полчаем афтоматически!!!
+    X_test2.shape[1], # 60 # количество столбцов # полчаем афтоматически!!!
+    1 # количество индикаторов, 3 измерение в данных, допустим еще акции apple
+  )
+)
+
+predicted_stock_price2 = regressor.predict(X_test2)
+for i in range(0, 20):
+  # predicted_stock_price2 = sc.inverse_transform(predicted_stock_price2)
+  input2 = np.concatenate((input2, [predicted_stock_price2[0]]), axis=0)
+  X_test2 = []
+  X_test2.append(input2[i:60 + i, 0])
+  X_test2 = np.array(X_test2)
+  # переделываем в 3D данные
+  X_test2 = np.reshape(
+    X_test2,
+    ( # keras documentation => Recurrent Layers => input shapes => 3D tensor (array) with shape
+      X_test2.shape[0], # 1198, # количество строчек # полчаем афтоматически!!!
+      X_test2.shape[1], # 60 # количество столбцов # полчаем афтоматически!!!
+      1 # количество индикаторов, 3 измерение в данных, допустим еще акции apple
+    )
+  )
+  predicted_stock_price2 = regressor.predict(X_test2)
+predicted_stock_price2 = sc.inverse_transform(input2[-20:])
+# ============================================================================
+
+
 
 # Visualising the results
 plt.plot(real_stock_price, color = 'red', label = 'Real Google Price 20 days')
 plt.plot(predicted_stock_price, color = 'blue', label = 'Predicted Google Price 20 days')
+plt.plot(predicted_stock_price2, color = 'green', label = 'Predicted by me 20 days')
 plt.title('Real and Predicted Google Price')
 plt.xlabel('Time 2017.1.1 - 2017.1.31')
 plt.ylabel('Google Price')
